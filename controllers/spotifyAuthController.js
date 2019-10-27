@@ -43,12 +43,39 @@ module.exports = {
           headers: { Authorization: `Bearer ${spotifyAuth.access_token}` },
         }
         const { data: userData } = await axios(userOptions)
-        res.status(200).send(userData)
+        res.status(200).send({
+          userData,
+          access_token: spotifyAuth.access_token,
+          refresh_token: spotifyAuth.refresh_token,
+        })
       } catch (error) {
         res.status(500).send('Error fetching user data')
       }
     } catch (error) {
       res.status(500).send('Error authenticating')
+    }
+  },
+  refresh: async (req, res) => {
+    const { refresh_token } = req.body
+    try {
+      const body = {
+        grant_type: 'refresh_token',
+        refresh_token,
+        redirect_uri: REDIRECT_URI,
+        client_id: SPOTIFY_CLIENT_ID,
+        client_secret: SPOTIFY_CLIENT_SECRET,
+      }
+      const options = {
+        url: 'https://accounts.spotify.com/api/token',
+        method: 'POST',
+        header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: querystring.stringify(body),
+      }
+      const { data: refreshSpotifyAuth } = await axios(options)
+      res.status(200).send(refreshSpotifyAuth)
+    } catch (error) {
+      console.log(error)
+      res.status(500).send('Error refreshing auth')
     }
   },
 }
