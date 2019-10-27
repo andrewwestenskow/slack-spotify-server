@@ -4,6 +4,16 @@ const axios = require('axios')
 const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } = process.env
 
 module.exports = {
+  sessionCheck: (req, res) => {
+    const { tokens } = req.session
+    console.log(tokens)
+    if (tokens) {
+      res.status(200).send(tokens)
+    } else {
+      res.status(404).send('No session found')
+    }
+  },
+
   login: (req, res) => {
     const scopes =
       'user-read-private user-read-email user-library-read user-library-modify user-read-recently-played user-top-read streaming app-remote-control playlist-read-collaborative playlist-modify-private playlist-modify-public playlist-read-private'
@@ -36,6 +46,11 @@ module.exports = {
       }
       const { data: spotifyAuth } = await axios(options)
 
+      req.session.tokens = {
+        access_token: spotifyAuth.access_token,
+        refresh_token: spotifyAuth.refresh_token,
+      }
+
       res.status(200).send({
         access_token: spotifyAuth.access_token,
         refresh_token: spotifyAuth.refresh_token,
@@ -61,6 +76,13 @@ module.exports = {
         data: querystring.stringify(body),
       }
       const { data: refreshSpotifyAuth } = await axios(options)
+
+      req.session.tokens = {
+        access_token: refreshSpotifyAuth.access_token,
+        refresh_token:
+          refreshSpotifyAuth.refresh_token || req.session.tokens.refresh_token,
+      }
+
       res.status(200).send(refreshSpotifyAuth)
     } catch (error) {
       console.log(error)
