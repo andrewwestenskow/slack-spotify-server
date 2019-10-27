@@ -36,21 +36,10 @@ module.exports = {
       }
       const { data: spotifyAuth } = await axios(options)
 
-      try {
-        const userOptions = {
-          url: 'https://api.spotify.com/v1/me',
-          method: 'GET',
-          headers: { Authorization: `Bearer ${spotifyAuth.access_token}` },
-        }
-        const { data: userData } = await axios(userOptions)
-        res.status(200).send({
-          userData,
-          access_token: spotifyAuth.access_token,
-          refresh_token: spotifyAuth.refresh_token,
-        })
-      } catch (error) {
-        res.status(500).send('Error fetching user data')
-      }
+      res.status(200).send({
+        access_token: spotifyAuth.access_token,
+        refresh_token: spotifyAuth.refresh_token,
+      })
     } catch (error) {
       res.status(500).send('Error authenticating')
     }
