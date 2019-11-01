@@ -22,5 +22,8 @@ app.get('/login', spotifyAuthCtrl.login)
 app.post('/callback', spotifyAuthCtrl.callback)
 app.post('/refresh', spotifyAuthCtrl.refresh)
 app.get('/session', spotifyAuthCtrl.sessionCheck)
+app.post('/token', spotifyAuthCtrl.checkLocalToken)
+
+//*SPOTIFY CONTROL ENDPOINTS
 
 app.listen(SERVER_PORT, () => console.log(`listening on port ${SERVER_PORT}`))

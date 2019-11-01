@@ -6,7 +6,6 @@ const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } = process.env
 module.exports = {
   sessionCheck: (req, res) => {
     const { tokens } = req.session
-    console.log(tokens)
     if (tokens) {
       res.status(200).send(tokens)
     } else {
@@ -16,7 +15,7 @@ module.exports = {
 
   login: (req, res) => {
     const scopes =
-      'user-read-private user-read-email user-library-read user-library-modify user-read-recently-played user-top-read streaming app-remote-control playlist-read-collaborative playlist-modify-private playlist-modify-public playlist-read-private'
+      'playlist-read-collaborative playlist-modify-private playlist-modify-public playlist-read-private user-modify-playback-state user-read-currently-playing user-read-playback-state user-read-private user-read-email user-library-modify user-library-read user-follow-modify user-follow-read user-read-recently-played user-top-read streaming app-remote-control'
 
     res.status(200).send(
       'https://accounts.spotify.com/authorize?' +
@@ -41,7 +40,7 @@ module.exports = {
       const options = {
         url: 'https://accounts.spotify.com/api/token',
         method: 'POST',
-        header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         data: querystring.stringify(body),
       }
       const { data: spotifyAuth } = await axios(options)
@@ -72,7 +71,7 @@ module.exports = {
       const options = {
         url: 'https://accounts.spotify.com/api/token',
         method: 'POST',
-        header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         data: querystring.stringify(body),
       }
       const { data: refreshSpotifyAuth } = await axios(options)
@@ -87,6 +86,27 @@ module.exports = {
     } catch (error) {
       console.log(error)
       res.status(500).send('Error refreshing auth')
+    }
+  },
+
+  checkLocalToken: async (req, res) => {
+    const { access_token, refresh_token } = req.body
+
+    const options = {
+      url: 'https://api.spotify.com/v1/me',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${access_token}` },
+    }
+
+    try {
+      await axios(options)
+      req.session.tokens = {
+        access_token,
+        refresh_token,
+      }
+      res.status(200).send({ access_token, refresh_token })
+    } catch (error) {
+      refresh(refresh_token)
     }
   },
 }
