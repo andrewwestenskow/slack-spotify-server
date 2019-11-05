@@ -75,11 +75,12 @@ module.exports = {
         data: querystring.stringify(body),
       }
       const { data: refreshSpotifyAuth } = await axios(options)
+      console.log(refreshSpotifyAuth)
 
       req.session.tokens = {
         access_token: refreshSpotifyAuth.access_token,
         refresh_token:
-          refreshSpotifyAuth.refresh_token || req.session.tokens.refresh_token,
+          refreshSpotifyAuth.refresh_token || req.body.refresh_token,
       }
 
       res.status(200).send(refreshSpotifyAuth)
@@ -106,7 +107,7 @@ module.exports = {
       }
       res.status(200).send({ access_token, refresh_token })
     } catch (error) {
-      refresh(refresh_token)
+      module.exports.refresh(req, res)
     }
   },
 }
