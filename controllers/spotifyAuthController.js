@@ -5,6 +5,7 @@ const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, REDIRECT_URI } = process.env
 
 module.exports = {
   sessionCheck: (req, res) => {
+    console.log('SESSION CHECK')
     const { tokens } = req.session
     if (tokens) {
       res.status(200).send(tokens)
@@ -14,6 +15,7 @@ module.exports = {
   },
 
   login: (req, res) => {
+    console.log('LOGIN')
     const scopes =
       'playlist-read-collaborative playlist-modify-private playlist-modify-public playlist-read-private user-modify-playback-state user-read-currently-playing user-read-playback-state user-read-private user-read-email user-library-modify user-library-read user-follow-modify user-follow-read user-read-recently-played user-top-read streaming app-remote-control'
 
@@ -24,10 +26,11 @@ module.exports = {
           client_id: SPOTIFY_CLIENT_ID,
           scope: scopes,
           redirect_uri: REDIRECT_URI,
-        }),
+        })
     )
   },
   callback: async (req, res) => {
+    console.log('CALLBACK')
     const { code } = req.query
     const body = {
       grant_type: 'authorization_code',
@@ -59,6 +62,7 @@ module.exports = {
     }
   },
   refresh: async (req, res) => {
+    console.log('REFRESHING')
     const { refresh_token } = req.body
     try {
       const body = {
@@ -75,7 +79,6 @@ module.exports = {
         data: querystring.stringify(body),
       }
       const { data: refreshSpotifyAuth } = await axios(options)
-      console.log(refreshSpotifyAuth)
 
       req.session.tokens = {
         access_token: refreshSpotifyAuth.access_token,
@@ -85,12 +88,13 @@ module.exports = {
 
       res.status(200).send(refreshSpotifyAuth)
     } catch (error) {
-      console.log(error)
+      console.log('ERROR REFRESHING')
       res.status(500).send('Error refreshing auth')
     }
   },
 
   checkLocalToken: async (req, res) => {
+    console.log('CHECKING TOKEN')
     const { access_token, refresh_token } = req.body
 
     const options = {
